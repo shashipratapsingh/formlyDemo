@@ -31,12 +31,12 @@ export class PaymentDetailsComponent implements OnInit {
   formFields: FormlyFieldConfig[] = [
     {
       key: 'ccNumber',
-      type: 'input',
+      type: 'number',
       templateOptions: {
         label: 'Credit Card Number',
         placeholder: 'Enter your credit card number',
         required: true,
-        maxLength: 16,
+        maxLength: 12,
         type: 'text',
       },
       className: 'half-width',

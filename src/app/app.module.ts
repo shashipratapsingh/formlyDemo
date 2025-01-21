@@ -29,6 +29,7 @@ import { RepeatTypeComponent } from './repeat-type/repeat-type.component';
       types: [
         { name: 'repeat', component: RepeatTypeComponent },
       ],
+      
     }),
     FormlyBootstrapModule,
     BrowserAnimationsModule,
