@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-session-booking',
@@ -23,12 +24,10 @@ import { FormlyMaterialModule } from '@ngx-formly/material';
 export class SessionBookingComponent {
   form = new FormGroup({});
   model: any = {
-    timeSlot: '',
     fromSlot: '',
     tillSlot: '',
     guests: [],
   };
-
   fields: FormlyFieldConfig[] = [
     {
       key: 'fromSlot',
@@ -40,7 +39,8 @@ export class SessionBookingComponent {
         options: [
           { value: '9:00 AM', label: '9:00 AM' },
           { value: '10:00 AM', label: '10:00 AM' },
-          // ... other time slots
+          { value: '11:00 AM', label: '11:00 AM' },
+          { value: '12:00 PM', label: '12:00 PM' },
         ],
       },
     },
@@ -51,11 +51,56 @@ export class SessionBookingComponent {
         label: 'Till Slot',
         placeholder: 'Select end time',
         required: true,
-        options: [
-          { value: '10:00 AM', label: '10:00 AM' },
-          { value: '11:00 AM', label: '11:00 AM' },
-          // ... other time slots
-        ],
+        options: [],
+      },
+      expressionProperties: {
+        'templateOptions.options': (model: any) => {
+          const allSlots = [
+            { value: '9:00 AM', label: '9:00 AM' },
+            { value: '10:00 AM', label: '10:00 AM' },
+            { value: '11:00 AM', label: '11:00 AM' },
+            { value: '12:00 PM', label: '12:00 PM' },
+            { value: '1:00 PM', label: '1:00 PM' },
+          ];
+          const fromIndex = allSlots.findIndex(
+            (slot) => slot.value === model.fromSlot
+          );
+          return fromIndex >= 0 ? allSlots.slice(fromIndex + 1) : [];
+        },
+      },
+    },
+    {
+      key: 'userName',
+      type: 'input',
+      templateOptions: {
+        label: 'Guest Name',
+        placeholder: 'Enter guest name',
+        required: true,
+      },
+    },
+    {
+      key: 'userEmail',
+      type: 'input',
+      templateOptions: {
+        label: 'Guest Email',
+        placeholder: 'Enter guest email',
+        required: true,
+        type: 'email',
+      },
+    },
+    {
+      key: 'userPhone',
+      type: 'input',
+      templateOptions: {
+        label: 'Guest Phone Number',
+        placeholder: 'Enter guest phone number',
+        required: true,
+        pattern: /^[0-9]{10}$/,
+      },
+      validation: {
+        messages: {
+          pattern: 'Phone number must be 10 digits.',
+        },
       },
     },
     {
@@ -105,8 +150,9 @@ export class SessionBookingComponent {
     },
   ];
 
-  saveData() {
+  constructor(private router: Router) {}
+  saveData() {     
     localStorage.setItem('sessionBookingData', JSON.stringify(this.model));
-    alert('Data saved successfully!');
+    this.router.navigate(['/payment-details']);
   }
 }

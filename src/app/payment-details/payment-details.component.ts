@@ -6,8 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
+import { FormlyMaterialModule } from '@ngx-formly/material';
 
 @Component({
   selector: 'app-payment-details',
@@ -21,6 +21,7 @@ import { HttpClientModule } from '@angular/common/http';
     FormlyModule,
     FormlyBootstrapModule,
     HttpClientModule,
+    FormlyMaterialModule,
   ],
   templateUrl: './payment-details.component.html',
   styleUrls: ['./payment-details.component.css'],
@@ -47,7 +48,7 @@ export class PaymentDetailsComponent implements OnInit {
         label: 'Expiration Date (MM/YY)',
         placeholder: 'MM/YY',
         required: true,
-        maxLength: 5,
+        maxLength: 4,
         type: 'text',
       },
       className: 'half-width',

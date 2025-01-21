@@ -1,0 +1,27 @@
+.guest-field {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+  }
+  .add-btn, .remove-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .add-btn {
+    margin-top: 10px;
+  }
+  .remove-btn {
+    margin-top: 5px;
+    background-color: #d32f2f;
+  }
+  .add-btn:hover {
+    background-color: #115293;
+  }
+  .remove-btn:hover {
+    background-color: #9a0007;
+  }
