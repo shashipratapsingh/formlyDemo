@@ -1,0 +1,20 @@
+<div class="container custom-container">
+  <div class="row justify-content-center align-items-start">
+    <div class="col-md-6">
+      <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="custom-form">
+        <div class="form-header">
+          <h2 class="form-title">Payment Details</h2>
+          <p class="form-description">Please fill in your payment details below to proceed with the transaction.</p>
+        </div>
+
+        <formly-form [form]="paymentForm" [fields]="formFields" [model]="paymentForm.value"></formly-form>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!paymentForm.valid">
+            Submit Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
