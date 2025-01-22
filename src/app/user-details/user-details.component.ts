@@ -61,21 +61,27 @@ export class UserDetailsComponent {
         label: 'Phone Number',
         placeholder: 'Enter your phone number',
         required: true,
-        maxLength: 10,
+        maxLength: 13,  // 3 digits for +91 and 10 digits for the phone number
         attributes: {
-          inputmode: 'numeric', // Opens numeric keypad on mobile
+          inputmode: 'numeric',
         },
       },
       hooks: {
         onInit: (field) => {
-          // Add custom input handling for numeric-only restriction
           const formControl = field.formControl;
           if (formControl) {
+            // Listen for value changes to handle formatting
             formControl.valueChanges.subscribe((value) => {
-              const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
-              if (numericValue !== value) {
-                formControl.setValue(numericValue, { emitEvent: false });
+              let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+              // Ensure the value starts with +91, if not prepend it
+              if (!numericValue.startsWith('91') && numericValue.length <= 10) {
+                numericValue = '91' + numericValue;  // Prepend country code
               }
+              if (numericValue.length > 13) {
+                numericValue = numericValue.slice(0, 13);  // Limit length to 13 (max: +91 + 10 digits)
+              }
+              // Update the value without triggering another change
+              formControl.setValue(`+${numericValue}`, { emitEvent: false });
             });
           }
         },
@@ -83,7 +89,7 @@ export class UserDetailsComponent {
       validation: {
         messages: {
           required: 'Phone number is required',
-          maxlength: 'Phone number cannot exceed 10 digits',
+          maxlength: 'Phone number cannot exceed 13 characters (including +91)',
         },
       },
     },
