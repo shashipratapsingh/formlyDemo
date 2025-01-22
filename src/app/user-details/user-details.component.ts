@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, Validators, FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
-import { Router } from '@angular/router';  // Import Router
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-details',
@@ -20,11 +20,11 @@ import { Router } from '@angular/router';  // Import Router
     FormlyMaterialModule,
   ],
   templateUrl: './user-details.component.html',
-  styleUrls: ['./user-details.component.css']
+  styleUrls: ['./user-details.component.css'],
 })
 export class UserDetailsComponent {
   form = new FormGroup({});
-  model: any = {}; 
+  model: any = {};
   options: FormlyFormOptions = {};
 
   // Define dynamic Formly fields with correct formControlName binding
@@ -61,19 +61,36 @@ export class UserDetailsComponent {
         label: 'Phone Number',
         placeholder: 'Enter your phone number',
         required: true,
-        pattern: /^(\+?\d{1,3})?(\d{10})$/,
+        maxLength: 10,
+        attributes: {
+          inputmode: 'numeric', // Opens numeric keypad on mobile
+        },
+      },
+      hooks: {
+        onInit: (field) => {
+          // Add custom input handling for numeric-only restriction
+          const formControl = field.formControl;
+          if (formControl) {
+            formControl.valueChanges.subscribe((value) => {
+              const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+              if (numericValue !== value) {
+                formControl.setValue(numericValue, { emitEvent: false });
+              }
+            });
+          }
+        },
       },
       validation: {
         messages: {
-          pattern: 'Phone number should support multiple formats (e.g., +1234567890, 1234567890)',
           required: 'Phone number is required',
+          maxlength: 'Phone number cannot exceed 10 digits',
         },
       },
     },
   ];
 
-  // Inject Router
-  constructor(private router: Router) {}
+  // Inject Router and FormBuilder
+  constructor(private router: Router, private fb: FormBuilder) {}
 
   // Handle form submission
   onSubmit() {

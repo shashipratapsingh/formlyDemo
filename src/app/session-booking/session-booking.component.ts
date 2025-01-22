@@ -60,7 +60,6 @@ export class SessionBookingComponent {
             { value: '10:00 AM', label: '10:00 AM' },
             { value: '11:00 AM', label: '11:00 AM' },
             { value: '12:00 PM', label: '12:00 PM' },
-            { value: '1:00 PM', label: '1:00 PM' },
           ];
           const fromIndex = allSlots.findIndex(
             (slot) => slot.value === model.fromSlot
@@ -95,11 +94,28 @@ export class SessionBookingComponent {
         label: 'Guest Phone Number',
         placeholder: 'Enter guest phone number',
         required: true,
-        pattern: /^[0-9]{10}$/,
+        attributes: {
+          inputmode: 'numeric', // Opens numeric keypad on mobile
+        },
+      },
+      hooks: {
+        onInit: (field) => {
+          const formControl = field.formControl;
+          if (formControl) {
+            formControl.valueChanges.subscribe((value) => {
+              const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+              const trimmedValue = numericValue.slice(0, 10); // Limit to 10 digits
+              if (trimmedValue !== value) {
+                formControl.setValue(trimmedValue, { emitEvent: false });
+              }
+            });
+          }
+        },
       },
       validation: {
         messages: {
-          pattern: 'Phone number must be 10 digits.',
+          required: 'Phone number is required',
+          maxlength: 'Phone number cannot exceed 10 digits',
         },
       },
     },
@@ -135,13 +151,30 @@ export class SessionBookingComponent {
             type: 'input',
             templateOptions: {
               label: 'Guest Phone Number',
-              placeholder: 'Enter guest phone number',
+              placeholder: 'Enter your phone number',
               required: true,
-              pattern: /^[0-9]{10}$/,
+              attributes: {
+                inputmode: 'numeric', // Opens numeric keypad on mobile
+              },
+            },
+            hooks: {
+              onInit: (field) => {
+                const formControl = field.formControl;
+                if (formControl) {
+                  formControl.valueChanges.subscribe((value) => {
+                    const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+                    const trimmedValue = numericValue.slice(0, 10); // Limit to 10 digits
+                    if (trimmedValue !== value) {
+                      formControl.setValue(trimmedValue, { emitEvent: false });
+                    }
+                  });
+                }
+              },
             },
             validation: {
               messages: {
-                pattern: 'Phone number must be 10 digits.',
+                required: 'Phone number is required',
+                maxlength: 'Phone number cannot exceed 10 digits',
               },
             },
           },
@@ -151,7 +184,8 @@ export class SessionBookingComponent {
   ];
 
   constructor(private router: Router) {}
-  saveData() {     
+
+  saveData() {
     localStorage.setItem('sessionBookingData', JSON.stringify(this.model));
     this.router.navigate(['/payment-details']);
   }
