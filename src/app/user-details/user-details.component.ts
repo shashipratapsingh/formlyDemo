@@ -61,27 +61,27 @@ export class UserDetailsComponent {
         label: 'Phone Number',
         placeholder: 'Enter your phone number',
         required: true,
-        maxLength: 13,  // 3 digits for +91 and 10 digits for the phone number
+        maxLength: 15,  // Max length to account for international phone numbers
         attributes: {
-          inputmode: 'numeric',
+          inputmode: 'tel',  // Better input mode for phone numbers
         },
       },
       hooks: {
         onInit: (field) => {
           const formControl = field.formControl;
           if (formControl) {
-            // Listen for value changes to handle formatting
             formControl.valueChanges.subscribe((value) => {
-              let numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
-              // Ensure the value starts with +91, if not prepend it
-              if (!numericValue.startsWith('91') && numericValue.length <= 10) {
-                numericValue = '91' + numericValue;  // Prepend country code
+              if (value) {
+                let numericValue = value.replace(/[^\d+]/g, ''); // Allow only digits and '+'
+                if (numericValue.startsWith('+')) {
+                  // Allow international format starting with '+'
+                  numericValue = numericValue.slice(0, 15); // Limit to 15 characters
+                } else {
+                  // Ensure default international format if no '+' is included
+                  numericValue = '+91' + numericValue.replace(/^\+/, '').slice(0, 10);
+                }
+                formControl.setValue(numericValue, { emitEvent: false });
               }
-              if (numericValue.length > 13) {
-                numericValue = numericValue.slice(0, 13);  // Limit length to 13 (max: +91 + 10 digits)
-              }
-              // Update the value without triggering another change
-              formControl.setValue(`+${numericValue}`, { emitEvent: false });
             });
           }
         },
@@ -89,10 +89,10 @@ export class UserDetailsComponent {
       validation: {
         messages: {
           required: 'Phone number is required',
-          maxlength: 'Phone number cannot exceed 13 characters (including +91)',
+          maxlength: 'Phone number cannot exceed 15 characters',
         },
       },
-    },
+    }    
   ];
 
   // Inject Router and FormBuilder
