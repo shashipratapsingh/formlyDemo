@@ -28,7 +28,8 @@ import Swal from 'sweetalert2';
   styleUrls: ['./payment-details.component.css'],
 })
 export class PaymentDetailsComponent implements OnInit {
-  paymentForm: FormGroup;
+  paymentForm: FormGroup = new FormGroup({});
+  ccNumberState: string='';
   formFields: FormlyFieldConfig[] = [
     {
       key: 'ccNumber',
@@ -37,7 +38,7 @@ export class PaymentDetailsComponent implements OnInit {
         label: 'Credit Card Number',
         placeholder: 'Enter your credit card number',
         required: true,
-        maxLength: 16,
+        maxLength: 19,
         type: 'text',
       },
       className: 'half-width',
@@ -72,10 +73,26 @@ export class PaymentDetailsComponent implements OnInit {
         },
       },
       className: 'half-width',
+      hooks: {
+        onInit: (field) => {
+          const control = field.formControl;
+          if (control) {
+            control.valueChanges.subscribe((value: string) => {
+              if (value) {
+                const formattedValue = value
+                  .replace(/\D/g, '') // Remove non-digits
+                  .slice(0, 4) // Limit to 4 digits
+                  .replace(/(\d{2})(\d{1,2})/, '$1/$2'); // Add slash after MM
+                control.setValue(formattedValue, { emitEvent: false });
+              }
+            });
+          }
+        },
+      },
     },
     {
       key: 'ccCVV',
-      type: 'input',
+      type: 'number',
       templateOptions: {
         label: 'CVV',
         required: true,
@@ -83,10 +100,23 @@ export class PaymentDetailsComponent implements OnInit {
         maxLength: 3,
       },
       className: 'half-width',
+      hooks: {
+        onInit: (field) => {
+          const control = field.formControl;
+          if (control) {
+            control.valueChanges.subscribe((value: string) => {
+              if (value) {
+                const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+                control.setValue(numericValue, { emitEvent: false });
+              }
+            });
+          }
+        },
+      },
     },
     {
       key: 'ccZipCode',
-      type: 'input',
+      type: 'number',
       templateOptions: {
         label: 'Zip Code',
         required: true,
@@ -94,66 +124,51 @@ export class PaymentDetailsComponent implements OnInit {
         type: 'text',
       },
       className: 'half-width',
+      hooks: {
+        onInit: (field) => {
+          const control = field.formControl;
+          if (control) {
+            control.valueChanges.subscribe((value: string) => {
+              if (value) {
+                const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+                control.setValue(numericValue, { emitEvent: false });
+              }
+            });
+          }
+        },
+      },
     },
   ];
 
-  constructor(private fb: FormBuilder) {
-    this.paymentForm = this.fb.group({
-      ccNumber: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^X{12}\d{0,4}$/), // 12 X's and up to 4 digits
-        ],
-      ],
-      ccExp: ['', [Validators.required]],
-      ccCVV: ['', [Validators.required, Validators.pattern(/^\d{3}$/)]],
-      ccZipCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
-    });
+  constructor() {
   }
 
   ngOnInit(): void {
-    // Auto-format the credit card number
-    this.paymentForm.get('ccNumber')?.valueChanges.subscribe((value) => {
-      if (value) {
-        const formattedValue = value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ');
-        this.paymentForm.get('ccNumber')?.setValue(formattedValue, { emitEvent: false });
-      }
-    });
-
-    // Auto-format the expiration date
-    this.paymentForm.get('ccExp')?.valueChanges.subscribe((value) => {
-      if (value) {
-        const input = value.replace(/\D/g, ''); // Remove non-numeric characters
-        let formattedValue = input;
-        if (input.length > 2) {
-          formattedValue = input.slice(0, 2) + '/' + input.slice(2, 4);
-        }
-        this.paymentForm.get('ccExp')?.setValue(formattedValue, { emitEvent: false });
-      }
-    });
+    
   }
+
   updateMaskedCreditCard(control: any, value: string): void {
    
     const digitsOnly = value.replace(/\D/g, '');
  
-   
+    this.ccNumberState = digitsOnly;
     if (digitsOnly.length <= 15) {
       control.setValue(digitsOnly, { emitEvent: false });
     } else {
    
-      const masked = 'X'.repeat(12) + digitsOnly.slice(-4);
- 
-     
+      let masked = 'X'.repeat(12) + digitsOnly.slice(-4);
+      masked = masked.replace(/(.{4})(?=.)/g, '$1 ');
       if (value !== masked) {
         control.setValue(masked, { emitEvent: false });
       }
     }
   }
+
   onSubmit() {
     if (this.paymentForm.valid) {
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
       const sessionInfo = JSON.parse(localStorage.getItem('sessionInfo') || '{}');
+      this.paymentForm.value['ccNumberUnmasked']=this.ccNumberState;
       const paymentInfo = this.paymentForm.value;
 
       const allData = {

@@ -30,12 +30,12 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
         {
           name: 'ccExpValidator',
           validation: (control: AbstractControl): ValidationErrors | null => {
+            console.log('Applying custom cc exp validation, value: ',control.value)
             const value = control.value || '';
             const regex = /^(0[1-9]|1[0-2])\/\d{2}$/; // MM/YY format
             if (!regex.test(value)) {
               return { ccExpInvalid: true }; // Invalid case
             }
-
             // Further check if the date is in the future
             const currentDate = new Date();
             const [month, year] = value.split('/');
