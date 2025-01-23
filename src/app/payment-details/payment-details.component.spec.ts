@@ -9,10 +9,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { PaymentDetailsComponent } from './payment-details.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { StoreModule, Store } from '@ngrx/store';
+import { paymentReducer } from '../state/reducer/payment.reducer';
+import { PaymentState } from '../state/app.state';
 
 describe('PaymentDetailsComponent', () => {
   let component: PaymentDetailsComponent;
   let fixture: ComponentFixture<PaymentDetailsComponent>;
+  let store: Store<PaymentState>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -42,13 +46,19 @@ describe('PaymentDetailsComponent', () => {
         MatFormFieldModule,
         MatInputModule,
         NoopAnimationsModule,
-        PaymentDetailsComponent
+        PaymentDetailsComponent,
+         StoreModule.forRoot({ payment: paymentReducer }),
       ],
+      providers: [
+        Store, 
+      ],
+      
       declarations: [],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PaymentDetailsComponent);
     component = fixture.componentInstance;
+    store = TestBed.inject(Store);
     fixture.detectChanges();
   });
 

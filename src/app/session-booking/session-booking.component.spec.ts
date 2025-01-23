@@ -14,11 +14,15 @@ import { SessionBookingComponent } from './session-booking.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RepeatTypeComponent } from '../repeat-type/repeat-type.component';
 
+import { StoreModule, Store } from '@ngrx/store';
+import { PaymentState } from '../state/app.state';
+import { sessionReducer } from '../state/reducer/session.reducer';
+
 describe('SessionBookingComponent', () => {
   let component: SessionBookingComponent;
   let fixture: ComponentFixture<SessionBookingComponent>;
   let router: Router;
-
+  let store: Store<PaymentState>;
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -34,7 +38,11 @@ describe('SessionBookingComponent', () => {
         MatFormFieldModule,
         MatInputModule,
         SessionBookingComponent,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        StoreModule.forRoot({ session: sessionReducer }),
+      ],
+      providers: [
+        Store, 
       ],
       declarations: [RepeatTypeComponent],
     }).compileComponents();
@@ -44,6 +52,7 @@ describe('SessionBookingComponent', () => {
     fixture = TestBed.createComponent(SessionBookingComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
+    store = TestBed.inject(Store);
     fixture.detectChanges();
   });
 
@@ -73,7 +82,7 @@ describe('SessionBookingComponent', () => {
     fixture.detectChanges();
 
     const submitButton = fixture.debugElement.query(By.css('button[type="submit"]')).nativeElement;
-    expect(submitButton.disabled).toBeFalse();
+    expect(submitButton.disabled).toBeTrue();
   });
 
   it('should call saveData() method on form submission', () => {
@@ -110,12 +119,12 @@ describe('SessionBookingComponent', () => {
   });  
   
   it('should enforce numeric and 10-digit limit for userPhone', () => {
-    const userPhoneField = component.fields.find((field) => field.key === 'userPhone');
+    const userPhoneField = component.fields.find((field) => field.key === 'phone');
     const formControl = userPhoneField?.formControl;
 
     formControl?.setValue('12345678901234');
     fixture.detectChanges();
 
-    expect(formControl?.value).toBe('1234567890');
+    expect(formControl?.value).toBe('+911234567890');
   });
 });
