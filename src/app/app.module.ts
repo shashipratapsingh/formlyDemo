@@ -60,6 +60,7 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     FormlyMaterialModule,
+    FormlyModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],
