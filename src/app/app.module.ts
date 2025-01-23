@@ -15,6 +15,11 @@ import { UserDetailsComponent } from './user-details/user-details.component';
 import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { RepeatTypeComponent } from './repeat-type/repeat-type.component';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { StoreModule } from '@ngrx/store';
+import { paymentReducer } from './state/reducer/payment.reducer';
+import { sessionReducer } from './state/reducer/session.reducer';
+import { userReducer } from './state/reducer/user.reducer';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 
 @NgModule({
   declarations: [
@@ -22,6 +27,14 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
     RepeatTypeComponent,
   ],
   imports: [
+    StoreDevtoolsModule.instrument({
+      maxAge: 25, // Retain last 25 states
+    }),
+    StoreModule.forRoot({
+      user: userReducer,
+      session: sessionReducer,
+      payment: paymentReducer,
+    }),
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
@@ -60,7 +73,6 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     FormlyMaterialModule,
-    FormlyModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],

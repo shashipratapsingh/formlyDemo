@@ -7,6 +7,9 @@ import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '../state/app.state';
+import { updateUser } from '../state/action/user.actions';
 
 @Component({
   selector: 'app-user-details',
@@ -62,6 +65,7 @@ export class UserDetailsComponent {
         placeholder: 'Enter your phone number',
         required: true,
         maxLength: 15,  // Max length to account for international phone numbers
+        minLength: 8,  // Min length for phone numbers
         attributes: {
           inputmode: 'tel',  // Better input mode for phone numbers
         },
@@ -96,13 +100,15 @@ export class UserDetailsComponent {
   ];
 
   // Inject Router and FormBuilder
-  constructor(private router: Router, private fb: FormBuilder) {}
+  constructor(private router: Router, private store: Store<AppState>) {}
 
   // Handle form submission
   onSubmit() {
     if (this.form.valid) {
       localStorage.setItem('userDetails', JSON.stringify(this.model));
       console.log('Form Submitted!', this.model);
+      const { name, email, phone } = this.model;
+      this.store.dispatch(updateUser({ name, email, phone }));
       // Navigate to session-booking page after form submission
       this.router.navigate(['/session-booking']);
     }

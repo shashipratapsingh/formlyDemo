@@ -6,6 +6,9 @@ import { MatInputModule } from '@angular/material/input';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '../state/app.state';
+import { updateSession } from '../state/action/session.actions';
 
 @Component({
   selector: 'app-session-booking',
@@ -69,7 +72,7 @@ export class SessionBookingComponent {
       },
     },
     {
-      key: 'userName',
+      key: 'name',
       type: 'input',
       templateOptions: {
         label: 'Guest Name',
@@ -78,24 +81,33 @@ export class SessionBookingComponent {
       },
     },
     {
-      key: 'userEmail',
+      key: 'email',
       type: 'input',
       templateOptions: {
         label: 'Guest Email',
         placeholder: 'Enter guest email',
         required: true,
         type: 'email',
+        pattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      },
+      validation: {
+        messages: {
+          pattern: 'Email must be in the correct format',
+          required: 'Email is required',
+        },
       },
     },
     {
-      key: 'userPhone',
+      key: 'phone',
       type: 'input',
       templateOptions: {
         label: 'Guest Phone Number',
         placeholder: 'Enter guest phone number',
         required: true,
+        maxLength: 15, // Max length to account for international phone numbers
+        minLength: 8, // Min length for Indian phone numbers
         attributes: {
-          inputmode: 'numeric', // Opens numeric keypad on mobile
+          inputmode: 'tel', // Opens numeric keypad on mobile
         },
       },
       hooks: {
@@ -103,10 +115,16 @@ export class SessionBookingComponent {
           const formControl = field.formControl;
           if (formControl) {
             formControl.valueChanges.subscribe((value) => {
-              const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
-              const trimmedValue = numericValue.slice(0, 10); // Limit to 10 digits
-              if (trimmedValue !== value) {
-                formControl.setValue(trimmedValue, { emitEvent: false });
+              if (value) {
+                let numericValue = value.replace(/[^\d+]/g, ''); // Allow only digits and '+'
+                if (numericValue.startsWith('+')) {
+                  // Allow international format starting with '+'
+                  numericValue = numericValue.slice(0, 15); // Limit to 15 characters
+                } else {
+                  // Ensure default international format if no '+' is included
+                  numericValue = '+91' + numericValue.replace(/^\+/, '').slice(0, 10);
+                }
+                formControl.setValue(numericValue, { emitEvent: false });
               }
             });
           }
@@ -115,7 +133,7 @@ export class SessionBookingComponent {
       validation: {
         messages: {
           required: 'Phone number is required',
-          maxlength: 'Phone number cannot exceed 10 digits',
+          maxlength: 'Phone number cannot exceed 15 digits',
         },
       },
     },
@@ -144,6 +162,13 @@ export class SessionBookingComponent {
               placeholder: 'Enter guest email',
               required: true,
               type: 'email',
+              pattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+            },
+            validation: {
+              messages: {
+                pattern: 'Email must be in the correct format',
+                required: 'Email is required',
+              },
             },
           },
           {
@@ -153,6 +178,8 @@ export class SessionBookingComponent {
               label: 'Guest Phone Number',
               placeholder: 'Enter your phone number',
               required: true,
+              maxLength: 15, // Max length to account for international phone numbers
+              minLength: 8, // Min length for Indian phone numbers
               attributes: {
                 inputmode: 'numeric', // Opens numeric keypad on mobile
               },
@@ -162,10 +189,16 @@ export class SessionBookingComponent {
                 const formControl = field.formControl;
                 if (formControl) {
                   formControl.valueChanges.subscribe((value) => {
-                    const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
-                    const trimmedValue = numericValue.slice(0, 10); // Limit to 10 digits
-                    if (trimmedValue !== value) {
-                      formControl.setValue(trimmedValue, { emitEvent: false });
+                    if (value) {
+                      let numericValue = value.replace(/[^\d+]/g, ''); // Allow only digits and '+'
+                      if (numericValue.startsWith('+')) {
+                        // Allow international format starting with '+'
+                        numericValue = numericValue.slice(0, 15); // Limit to 15 characters
+                      } else {
+                        // Ensure default international format if no '+' is included
+                        numericValue = '+91' + numericValue.replace(/^\+/, '').slice(0, 10);
+                      }
+                      formControl.setValue(numericValue, { emitEvent: false });
                     }
                   });
                 }
@@ -174,7 +207,7 @@ export class SessionBookingComponent {
             validation: {
               messages: {
                 required: 'Phone number is required',
-                maxlength: 'Phone number cannot exceed 10 digits',
+                maxlength: 'Phone number cannot exceed 15 digits',
               },
             },
           },
@@ -183,10 +216,14 @@ export class SessionBookingComponent {
     },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private store: Store<AppState>) {}
 
   saveData() {
-    localStorage.setItem('sessionBookingData', JSON.stringify(this.model));
+    const {name, email, phone} = this.model;
+    const { fromSlot, tillSlot, guests } = this.model;
+    guests.push({ name, email, phone });
+    localStorage.setItem('sessionBookingData', JSON.stringify({ fromSlot, tillSlot, guests }));
+    this.store.dispatch(updateSession({ fromSlot, tillSlot, guests }));
     this.router.navigate(['/payment-details']);
   }
 }

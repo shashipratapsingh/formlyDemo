@@ -9,6 +9,11 @@ import { FormlyBootstrapModule } from '@ngx-formly/bootstrap';
 import { HttpClientModule } from '@angular/common/http';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import Swal from 'sweetalert2';
+import { Store } from '@ngrx/store';
+import { AppState } from '../state/app.state';
+import { updatePayment } from '../state/action/payment.actions';
+import { selectUser } from '../state/selector/user.selectors';
+import { selectSession } from '../state/selector/session.selectors';
 
 @Component({
   selector: 'app-payment-details',
@@ -29,6 +34,8 @@ import Swal from 'sweetalert2';
 })
 export class PaymentDetailsComponent implements OnInit {
   paymentForm: FormGroup = new FormGroup({});
+  user$ = this.store.select(selectUser);
+  session$ = this.store.select(selectSession);
   ccNumberState: string='';
   formFields: FormlyFieldConfig[] = [
     {
@@ -39,6 +46,7 @@ export class PaymentDetailsComponent implements OnInit {
         placeholder: 'Enter your credit card number',
         required: true,
         maxLength: 19,
+        minLength: 19,
         type: 'text',
       },
       className: 'half-width',
@@ -121,6 +129,7 @@ export class PaymentDetailsComponent implements OnInit {
         label: 'Zip Code',
         required: true,
         maxLength: 5,
+        minLength: 5,
         type: 'text',
       },
       className: 'half-width',
@@ -140,8 +149,7 @@ export class PaymentDetailsComponent implements OnInit {
     },
   ];
 
-  constructor() {
-  }
+  constructor(private store: Store<AppState>) {}
 
   ngOnInit(): void {
     
@@ -166,11 +174,16 @@ export class PaymentDetailsComponent implements OnInit {
 
   onSubmit() {
     if (this.paymentForm.valid) {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-      const sessionInfo = JSON.parse(localStorage.getItem('sessionInfo') || '{}');
+      const userInfo = JSON.parse(localStorage.getItem('userDetails') || '{}');
+      const sessionInfo = JSON.parse(localStorage.getItem('sessionBookingData') || '{}');
       this.paymentForm.value['ccNumberUnmasked']=this.ccNumberState;
       const paymentInfo = this.paymentForm.value;
-
+      this.user$.subscribe((user) => {
+        console.log('User from NgRx Store:',user);
+      });
+      this.session$.subscribe((session) => {
+        console.log('Session from NgRx Store:',session);
+      });
       const allData = {
         userInfo,
         sessionInfo,
@@ -178,7 +191,8 @@ export class PaymentDetailsComponent implements OnInit {
       };
       localStorage.setItem('paymentInfo', JSON.stringify(paymentInfo));
       localStorage.setItem('allData', JSON.stringify(allData));
-
+      const {ccNumber,ccNumberMasked, ccExp, ccCVV, ccZipCode} = paymentInfo;
+      this.store.dispatch(updatePayment({ ccNumber, ccNumberMasked, ccExp, ccCVV, ccZipCode }));
       Swal.fire({
         title: 'Payment has been successfully processed!',
         icon: 'success',
